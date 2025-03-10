@@ -31,7 +31,7 @@ pipeline {
         stage('Deploy on Vagrant') {
             steps {
                 sh 'docker pull $DOCKER_IMAGE'
-                sh 'docker run -d -p 8080:8080 $DOCKER_IMAGE'
+                sh 'docker run -d -p 5000:5000 $DOCKER_IMAGE'
             }
         }
     }
