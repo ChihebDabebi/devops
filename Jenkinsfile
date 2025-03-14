@@ -5,6 +5,7 @@ pipeline {
         DOCKER_IMAGE = 'chiheb634/springboot-app'
         SONARQUBE_SERVER = 'http://localhost:9000'
         SONARQUBE_TOKEN = credentials('jenkins-sonar') // Assuming you have stored the token in Jenkins credentials
+        NEXUS_REPO_URL = 'http://localhost:8081/repository/maven-releases/'  // Change to your Nexus URL
     }
 
     stages {
@@ -12,18 +13,24 @@ pipeline {
             steps {
                 sh "mvn clean"
                 sh "mvn compile"
-                sh 'mvn package'
+                sh "mvn package"
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    // Run SonarQube analysis with your credentials
                     withCredentials([string(credentialsId: 'jenkins-sonar', variable: 'SONARQUBE_TOKEN')]) {
                         sh "mvn sonar:sonar -Dsonar.login=$SONARQUBE_TOKEN -Dsonar.host.url=$SONARQUBE_SERVER"
                     }
                 }
+            }
+        }
+
+        stage('Deploy to Nexus') {
+            steps {
+                sh 'mvn deploy -DskipTests -DaltDeploymentRepository=nexus::default::http://localhost:8081/repository/maven-releases/ -DrepositoryId=nexus
+'
             }
         }
 
