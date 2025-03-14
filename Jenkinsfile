@@ -3,6 +3,8 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'chiheb634/springboot-app'
+        SONARQUBE_SERVER = 'http://localhost:9000'
+        SONARQUBE_TOKEN = credentials('jenkins-sonar') // Assuming you have stored the token in Jenkins credentials
     }
 
     stages {
@@ -11,6 +13,17 @@ pipeline {
                 sh "mvn clean"
                 sh "mvn compile"
                 sh 'mvn package'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    // Run SonarQube analysis with your credentials
+                    withCredentials([string(credentialsId: 'jenkins-sonar', variable: 'SONARQUBE_TOKEN')]) {
+                        sh "mvn sonar:sonar -Dsonar.login=$SONARQUBE_TOKEN -Dsonar.host.url=$SONARQUBE_SERVER"
+                    }
+                }
             }
         }
 
@@ -36,4 +49,3 @@ pipeline {
         }
     }
 }
-
